@@ -105,5 +105,88 @@
             </div>
         </div>
         {% endif %}
+
+        {% if task.assigned_users.exists %}
+        <div class="task-assigned-users mt-2">
+            <div class="d-flex align-items-center flex-wrap gap-1">
+                {% for user in task.assigned_users.all|slice:":3" %}
+                <div class="assigned-user-avatar" data-bs-toggle="tooltip" title="{{ user.get_full_name|default:user.username }}">
+                    <div class="avatar-placeholder">
+                        {{ user.get_full_name|default:user.username|make_list|first|upper }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% if task.assigned_users.count > 3 %}
+                <div class="assigned-user-count" data-bs-toggle="tooltip" 
+                     title="{% for user in task.assigned_users.all|slice:'3:' %}{{ user.get_full_name|default:user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                    +{{ task.assigned_users.count|add:'-3' }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
-</div> 
+</div>
+
+<style>
+.task-assigned-users {
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding-top: 0.5rem;
+}
+
+.assigned-user-avatar {
+    width: 28px;
+    height: 28px;
+    position: relative;
+    margin-right: -8px;
+    border: 2px solid #fff;
+    transition: transform 0.2s;
+}
+
+.assigned-user-avatar:hover {
+    transform: translateY(-2px);
+    z-index: 1;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 50%;
+}
+
+.assigned-user-count {
+    background-color: #e9ecef;
+    color: #495057;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    margin-left: 0.25rem;
+    border: 2px solid #fff;
+    cursor: help;
+}
+
+.assigned-user-count:hover {
+    background-color: #dee2e6;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips de Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl, {
+            placement: 'top',
+            html: true
+        });
+    });
+});
+</script> 

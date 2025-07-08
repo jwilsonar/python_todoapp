@@ -9,41 +9,35 @@
 <link rel="stylesheet" href="{% static 'css/kanban.css' %}">
 {% endblock %}
 
-{% block content %}
-<!-- ============================================================================
-     TASK LIST DETAIL VIEW - MAIN TEMPLATE
-     Vista principal del detalle de una lista de tareas con tablero Kanban
-     ============================================================================ -->
+    {% block content %}
+    {% include 'tasks/components/list_header.html' %}
 
-<!-- Encabezado con información de la lista y botones de acción -->
-{% include 'tasks/components/list_header.html' %}
+    <!-- Estadísticas de la lista (versión compacta) -->
+    {% include 'tasks/components/stats_card.html' %}
 
-<!-- Estadísticas de la lista (versión compacta) -->
-{% include 'tasks/components/stats_card.html' %}
+    <!-- Filtros de tareas -->
+    {% include 'tasks/components/filter_form.html' %}
 
-<!-- Filtros de tareas -->
-{% include 'tasks/components/filter_form.html' %}
+    <!-- Tablero Kanban con las tareas organizadas por estado -->
+    <div class="row g-4 kanban-container">
+        <!-- Columna de tareas pendientes -->
+        {% include 'tasks/components/kanban_column.html' with column_id="pending-tasks" column_status="pending" column_title="Pendientes" column_icon="fas fa-clock" column_header_class="pending-header" task_count=task_list.get_pending_tasks_count %}
+        
+        <!-- Columna de tareas en proceso -->
+        {% include 'tasks/components/kanban_column.html' with column_id="in-progress-tasks" column_status="in_progress" column_title="En Proceso" column_icon="fas fa-spinner" column_header_class="in-progress-header" task_count=task_list.get_in_progress_tasks_count %}
+        
+        <!-- Columna de tareas completadas -->
+        {% include 'tasks/components/kanban_column.html' with column_id="completed-tasks" column_status="completed" column_title="Completadas" column_icon="fas fa-check-circle" column_header_class="completed-header" task_count=task_list.get_completed_tasks_count %}
+    </div>
 
-<!-- Tablero Kanban con las tareas organizadas por estado -->
-<div class="row g-4 kanban-container">
-    <!-- Columna de tareas pendientes -->
-    {% include 'tasks/components/kanban_column.html' with column_id="pending-tasks" column_status="pending" column_title="Pendientes" column_icon="fas fa-clock" column_header_class="pending-header" task_count=task_list.get_pending_tasks_count %}
-    
-    <!-- Columna de tareas en proceso -->
-    {% include 'tasks/components/kanban_column.html' with column_id="in-progress-tasks" column_status="in_progress" column_title="En Proceso" column_icon="fas fa-spinner" column_header_class="in-progress-header" task_count=task_list.get_in_progress_tasks_count %}
-    
-    <!-- Columna de tareas completadas -->
-    {% include 'tasks/components/kanban_column.html' with column_id="completed-tasks" column_status="completed" column_title="Completadas" column_icon="fas fa-check-circle" column_header_class="completed-header" task_count=task_list.get_completed_tasks_count %}
-</div>
+    <!-- Modal para creación rápida de tareas -->
+    {% include 'tasks/components/quick_task_modal.html' %}
 
-<!-- Modal para creación rápida de tareas -->
-{% include 'tasks/components/quick_task_modal.html' %}
+    <!-- Información de usuarios compartidos -->
+    {% include 'tasks/components/shared_users.html' %}
 
-<!-- Información de usuarios compartidos -->
-{% include 'tasks/components/shared_users.html' %}
-
-<!-- Paginación -->
-{% include 'tasks/components/pagination.html' with page_obj=tasks %}
+    <!-- Paginación -->
+    {% include 'tasks/components/pagination.html' with page_obj=tasks %}
 
 {% endblock %}
 

@@ -1,7 +1,5 @@
 <!-- ============================================================================
-     KANBAN COLUMN COMPONENT
-     Columna reutilizable para el tablero Kanban
-     
+         
      Variables requeridas:
      - column_id: ID único de la columna (ej: "pending-tasks")
      - column_status: Estado de las tareas en esta columna (ej: "pending")
@@ -13,25 +11,27 @@
      - can_edit: Permiso de edición
      ============================================================================ -->
 
-<div class="col-lg-4">
-    <div class="kanban-column-wrapper">
+<div class="col-lg-4 mb-4">
+    <div class="card h-100 shadow-sm border {% if column_status == 'pending' %}border-warning{% elif column_status == 'in_progress' %}border-info{% else %}border-success{% endif %} border-2">
         <!-- Header de la columna -->
-        <div class="kanban-column-header {{ column_header_class }}">
-            <h6 class="kanban-column-title">
-                <span>
+        <div class="card-header py-3 {% if column_status == 'pending' %}bg-warning{% elif column_status == 'in_progress' %}bg-info{% else %}bg-success{% endif %} bg-opacity-25">
+            <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold {% if column_status == 'pending' %}text-warning{% elif column_status == 'in_progress' %}text-info{% else %}text-success{% endif %}">
                     <i class="{{ column_icon }} me-2"></i>{{ column_title }}
-                </span>
-                <span class="kanban-count-badge">{{ task_count }}</span>
-            </h6>
+                </h6>
+                <span class="badge {% if column_status == 'pending' %}bg-warning{% elif column_status == 'in_progress' %}bg-info{% else %}bg-success{% endif %} bg-opacity-75 text-dark rounded-pill px-3">{{ task_count }}</span>
+            </div>
         </div>
 
         <!-- Contenido de la columna -->
-        <div class="d-flex flex-column gap-3" id="{{ column_id }}" data-status="{{ column_status }}">
-            {% for task in tasks %}
-                {% if task.status == column_status %}
-                    {% include 'tasks/task_card.html' with task=task can_edit=can_edit %}
-                {% endif %}
-            {% endfor %}
+        <div class="card-body p-3 {% if column_status == 'pending' %}bg-warning{% elif column_status == 'in_progress' %}bg-info{% else %}bg-success{% endif %} bg-opacity-10">
+            <div class="d-flex flex-column gap-3" id="{{ column_id }}" data-status="{{ column_status }}">
+                {% for task in tasks %}
+                    {% if task.status == column_status %}
+                        {% include 'tasks/task_card.html' with task=task can_edit=can_edit %}
+                    {% endif %}
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div> 

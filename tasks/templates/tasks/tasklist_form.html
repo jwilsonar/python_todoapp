@@ -221,6 +221,48 @@ $(document).ready(function() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
     });
+
+    // Previsualización de archivos
+    $('input[type="file"][data-preview="true"]').on('change', function(e) {
+        const file = e.target.files[0];
+        const preview = $('#file-preview');
+        const previewImage = preview.find('.preview-image');
+        const previewFilename = preview.find('.preview-filename');
+        const previewSize = preview.find('.preview-size');
+        const previewIcon = preview.find('.preview-icon i');
+
+        if (file) {
+            // Mostrar el contenedor de previsualización
+            preview.removeClass('d-none');
+
+            // Actualizar nombre y tamaño
+            previewFilename.text(file.name);
+            previewSize.text(formatFileSize(file.size));
+
+            // Actualizar icono según tipo de archivo
+            updateFileIcon(previewIcon, file.type);
+
+            // Si es una imagen, mostrar previsualización
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImage.removeClass('d-none').find('img').attr('src', e.target.result);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImage.addClass('d-none');
+            }
+        } else {
+            preview.addClass('d-none');
+        }
+    });
+
+    // Botón para eliminar archivo
+    $('.remove-file').on('click', function() {
+        const fileInput = $('input[type="file"][data-preview="true"]');
+        fileInput.val('');
+        $('#file-preview').addClass('d-none');
+    });
     
     // Validación del formulario
     $('form').on('submit', function(e) {
@@ -256,6 +298,25 @@ $(document).ready(function() {
         const color = $(this).val();
         $(this).css('border-color', color);
     });
+
+    // Funciones auxiliares
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateFileIcon(iconElement, fileType) {
+        if (fileType.startsWith('image/')) {
+            iconElement.removeClass().addClass('fas fa-image text-info');
+        } else if (fileType === 'application/pdf') {
+            iconElement.removeClass().addClass('fas fa-file-pdf text-danger');
+        } else {
+            iconElement.removeClass().addClass('fas fa-file text-primary');
+        }
+    }
 });
 </script>
 {% endblock %} 

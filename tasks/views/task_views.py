@@ -23,22 +23,33 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
             raise PermissionDenied
         return super().dispatch(request, *args, **kwargs)
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['task_list'] = self.task_list
+        return kwargs
+    
     def form_valid(self, form):
         form.instance.task_list = self.task_list
         form.instance.created_by = self.request.user
         
         with transaction.atomic():
-            response = super().form_valid(form)
+            self.object = form.save()
+            
             # Crear actividad
+            activity_description = f'Tarea creada: {self.object.title}'
+            if form.cleaned_data.get('assigned_users'):
+                assigned_users = form.cleaned_data['assigned_users']
+                activity_description += f' (Asignada a: {", ".join([user.get_full_name() or user.username for user in assigned_users])})'
+            
             TaskActivity.objects.create(
                 task=self.object,
                 user=self.request.user,
                 action='created',
-                description=f'Tarea creada: {self.object.title}'
+                description=activity_description
             )
         
         messages.success(self.request, 'Tarea creada exitosamente.')
-        return response
+        return super().form_valid(form)
     
     def get_success_url(self):
         return reverse('tasklist_detail', kwargs={'pk': self.task_list.pk})
@@ -62,19 +73,42 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
             raise PermissionDenied
         return obj
     
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['task_list'] = self.get_object().task_list
+        return kwargs
+    
     def form_valid(self, form):
         with transaction.atomic():
-            response = super().form_valid(form)
-            # Crear actividad
+            # Obtener usuarios asignados anteriormente
+            previous_assigned_users = set(self.object.assigned_users.all())
+            
+            # Guardar el formulario
+            self.object = form.save()
+            
+            # Obtener nuevos usuarios asignados
+            new_assigned_users = set(form.cleaned_data.get('assigned_users', []))
+            
+            # Detectar cambios en asignaciones
+            added_users = new_assigned_users - previous_assigned_users
+            removed_users = previous_assigned_users - new_assigned_users
+            
+            # Crear actividad con detalles de cambios en asignaciones
+            activity_description = f'Tarea actualizada: {self.object.title}'
+            if added_users:
+                activity_description += f'\nUsuarios asignados: {", ".join([user.get_full_name() or user.username for user in added_users])}'
+            if removed_users:
+                activity_description += f'\nUsuarios desasignados: {", ".join([user.get_full_name() or user.username for user in removed_users])}'
+            
             TaskActivity.objects.create(
                 task=self.object,
                 user=self.request.user,
                 action='updated',
-                description=f'Tarea actualizada: {self.object.title}'
+                description=activity_description
             )
         
         messages.success(self.request, 'Tarea actualizada exitosamente.')
-        return response
+        return super().form_valid(form)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

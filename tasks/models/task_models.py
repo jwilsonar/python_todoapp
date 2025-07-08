@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.core.validators import FileExtensionValidator
 
 
 class Task(models.Model):
@@ -23,6 +24,19 @@ class Task(models.Model):
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium', verbose_name="Prioridad")
     due_date = models.DateTimeField(null=True, blank=True, verbose_name="Fecha límite")
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending', verbose_name="Estado")
+    attachment = models.FileField(
+        upload_to='task_attachments/%Y/%m/',
+        null=True,
+        blank=True,
+        verbose_name="Archivo adjunto",
+        validators=[FileExtensionValidator(allowed_extensions=['pdf', 'jpg', 'jpeg', 'png', 'gif'])]
+    )
+    assigned_users = models.ManyToManyField(
+        User,
+        related_name='assigned_tasks',
+        blank=True,
+        verbose_name="Usuarios Asignados"
+    )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Creado por")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Creado")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Actualizado")
@@ -115,6 +129,18 @@ class Task(models.Model):
             self.status = 'completed'
         else:
             self.status = 'pending'
+
+    def get_assigned_users_display(self):
+        """Retorna una lista formateada de usuarios asignados."""
+        return [user.get_full_name() or user.username for user in self.assigned_users.all()]
+
+    def get_assigned_users_count(self):
+        """Retorna el número de usuarios asignados."""
+        return self.assigned_users.count()
+
+    def is_user_assigned(self, user):
+        """Verifica si un usuario está asignado a la tarea."""
+        return self.assigned_users.filter(id=user.id).exists()
 
 
 class TaskActivity(models.Model):

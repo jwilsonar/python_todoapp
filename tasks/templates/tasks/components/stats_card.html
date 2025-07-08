@@ -1,41 +1,37 @@
-<!-- ============================================================================
-     TASK LIST STATISTICS COMPONENT
-     Tarjeta compacta con estadísticas de la lista de tareas
-     ============================================================================ -->
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-12">
-        <div class="stats-card">
-            <div class="card-body py-2">
-                <div class="d-flex justify-content-around align-items-center">
+        <div class="card shadow-sm border bg-white rounded-3">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-around align-items-center flex-wrap gap-3">
                     <!-- Total de tareas -->
-                    <div class="stats-item">
-                        <div class="stats-label">Total</div>
-                        <div class="text-center">{{ task_list.get_tasks_count }}</div>
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">Total</h6>
+                        <h3 class="mb-0 text-primary fw-bold">{{ task_list.get_tasks_count }}</h3>
                     </div>
 
                     <!-- Tareas pendientes -->
-                    <div class="stats-item">
-                        <div class="stats-label">Pendientes</div>
-                        <div class="text-center">{{ task_list.get_pending_tasks_count }}</div>
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">Pendientes</h6>
+                        <h3 class="mb-0 text-warning fw-bold">{{ task_list.get_pending_tasks_count }}</h3>
                     </div>
 
                     <!-- Tareas en proceso -->
-                    <div class="stats-item">
-                        <div class="stats-label">En Proceso</div>
-                        <div class="text-center">{{ task_list.get_in_progress_tasks_count }}</div>
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">En Proceso</h6>
+                        <h3 class="mb-0 text-info fw-bold">{{ task_list.get_in_progress_tasks_count }}</h3>
                     </div>
 
                     <!-- Tareas completadas -->
-                    <div class="stats-item">
-                        <div class="stats-label">Completadas</div>
-                        <div class="text-center">{{ task_list.get_completed_tasks_count }}</div>
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">Completadas</h6>
+                        <h3 class="mb-0 text-success fw-bold">{{ task_list.get_completed_tasks_count }}</h3>
                     </div>
 
                     <!-- Usuarios compartidos -->
-                    <div class="stats-item">
-                        <div class="stats-label">Compartida</div>
-                        <div class="text-center">{{ shared_users|length }}</div>
+                    <div class="text-center">
+                        <h6 class="text-muted mb-2 small text-uppercase fw-bold">Compartida</h6>
+                        <h3 class="mb-0 text-secondary fw-bold">{{ shared_users|length }}</h3>
                     </div>
                 </div>
             </div>
