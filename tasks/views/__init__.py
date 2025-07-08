@@ -36,6 +36,7 @@ from .sharing_views import (
 from .attachment_views import (
     add_attachment_view,
     delete_attachment_view,
+    view_attachment,
 )
 
 # Importaciones de vistas API
@@ -76,6 +77,7 @@ __all__ = [
     # Vistas de archivos adjuntos
     'add_attachment_view',
     'delete_attachment_view',
+    'view_attachment',
     
     # Vistas API
     'toggle_task_complete',

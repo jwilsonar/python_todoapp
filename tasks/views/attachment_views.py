@@ -2,9 +2,36 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, Http404
+from django.conf import settings
+import os
 
 from ..models import Task, TaskAttachment, TaskActivity
 from ..forms import TaskAttachmentForm
+
+
+@login_required
+def view_attachment(request, task_pk, pk):
+    """Vista para ver/descargar archivos adjuntos."""
+    task = get_object_or_404(Task, pk=task_pk)
+    attachment = get_object_or_404(TaskAttachment, pk=pk, task=task)
+    
+    # Verificar permisos
+    if not (task.task_list.owner == request.user or 
+            task.task_list.shared_with.filter(shared_with=request.user).exists()):
+        raise PermissionDenied
+    
+    try:
+        file_path = os.path.join(settings.MEDIA_ROOT, str(attachment.file))
+        response = FileResponse(open(file_path, 'rb'))
+        # Si es una imagen, mostrarla en el navegador
+        if attachment.is_image():
+            return response
+        # Si no es una imagen, forzar descarga
+        response['Content-Disposition'] = f'attachment; filename="{attachment.filename}"'
+        return response
+    except FileNotFoundError:
+        raise Http404("El archivo no existe")
 
 
 @login_required

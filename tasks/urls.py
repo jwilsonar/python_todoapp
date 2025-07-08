@@ -28,6 +28,7 @@ urlpatterns = [
     
     # Attachments
     path('tasks/<int:task_pk>/add-attachment/', views.add_attachment_view, name='add_attachment'),
+    path('tasks/task/<int:task_pk>/attachment/<int:pk>/', views.view_attachment, name='view_attachment'),
     path('attachments/<int:pk>/delete/', views.delete_attachment_view, name='delete_attachment'),
     
     # AJAX API endpoints
