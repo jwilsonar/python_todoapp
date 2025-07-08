@@ -1,0 +1,29 @@
+.bg-high{
+    background-color: #dc3545;
+}
+.bg-medium{
+    background-color: #ffc107;
+}
+.bg-low{
+    background-color: #198754;
+}
+
+.bg-pending{
+    background-color: #6c757d;
+}
+.bg-in_progress{
+    background-color: #0d6efd;
+}
+.bg-completed{
+    background-color: #198754;
+}
+
+.dropdown-toggle{
+    background-color: transparent;
+    border: none;
+    color: #000;
+}
+
+.dropdown-toggle:hover{
+    background-color: transparent;
+}

@@ -1,0 +1,109 @@
+{% load static %}
+
+<div class="card" 
+     data-task-id="{{ task.id }}" 
+     data-status="{{ task.status }}"
+     data-priority="{{ task.priority }}"
+     draggable="true">
+    <div class="p-3">
+        <div class="d-flex justify-content-between">
+            <h6 class="task-title">{{ task.title }}</h6>
+            {% if can_edit %}
+            <div class="dropdown">
+                <button class="dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% if task.status != 'pending' %}
+                    <li><a class="dropdown-item d-flex align-items-center gap-2 change-status-btn" href="#" data-task-id="{{ task.id }}" data-new-status="pending">
+                        <i class="fas fa-clock"></i>Pendiente
+                    </a></li>
+                    {% endif %}
+                    {% if task.status != 'in_progress' %}
+                    <li><a class="dropdown-item d-flex align-items-center gap-2 change-status-btn" href="#" data-task-id="{{ task.id }}" data-new-status="in_progress">
+                        <i class="fas fa-spinner"></i>En Proceso
+                    </a></li>
+                    {% endif %}
+                    {% if task.status != 'completed' %}
+                    <li><a class="dropdown-item d-flex align-items-center gap-2 change-status-btn" href="#" data-task-id="{{ task.id }}" data-new-status="completed">
+                        <i class="fas fa-check"></i>Completar
+                    </a></li>
+                    {% endif %}
+                    
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'task_edit' task.pk %}">
+                        <i class="fas fa-edit"></i>Editar
+                    </a></li>
+                    {% if task.status != 'completed' %}
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="{% url 'add_attachment' task.pk %}">
+                        <i class="fas fa-paperclip"></i>Adjuntar Archivo
+                    </a></li>
+                    {% endif %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2 text-danger" href="{% url 'task_delete' task.pk %}">
+                        <i class="fas fa-trash"></i>Eliminar
+                    </a></li>
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if task.description %}
+        <p class="task-description">{{ task.description|truncatewords:20 }}</p>
+        {% endif %}
+        
+        <div class="task-meta">
+            {% if task.status != 'completed' %}
+            <span class="badge bg-{{ task.priority|lower }}">
+                {{ task.get_priority_display }}
+            </span>
+            <span class="badge bg-{{ task.status|lower }}">
+                <i class="{{ task.get_status_icon }}"></i>
+                {{ task.get_status_display }}
+            </span>
+            {% else %}
+            <span class="badge bg-success">
+                <i class="fas fa-check"></i>
+                Completada
+            </span>
+            {% endif %}
+            
+            {% if task.due_date %}
+            <div class="task-date {% if task.is_overdue and task.status != 'completed' %}overdue{% endif %}">
+                <i class="fas fa-calendar"></i>
+                {{ task.due_date|date:"d/m/Y H:i" }}
+                {% if task.is_overdue and task.status != 'completed' %}
+                <span>(Vencida)</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% if task.status == 'completed' and task.completed_at %}
+            <div class="task-date">
+                <i class="fas fa-check"></i>
+                {{ task.completed_at|date:"d/m/Y H:i" }}
+            </div>
+            {% endif %}
+            
+            {% if task.attachments.exists %}
+            <div class="task-date">
+                <i class="fas fa-paperclip"></i>
+                {{ task.attachments.count }}
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if task.attachments.exists %}
+        <div class="task-attachments">
+            <div class="d-flex flex-wrap gap-2">
+                {% for attachment in task.attachments.all %}
+                <a href="{{ attachment.file.url }}" target="_blank" class="attachment-badge">
+                    <i class="fas fa-file"></i>
+                    {{ attachment.filename|truncatechars:15 }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div> 

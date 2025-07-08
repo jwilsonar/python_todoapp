@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mis Listas - To-Do App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-list me-2 text-primary"></i>
+                    Listas de Tareas
+                </h1>
+                <p class="text-muted mb-0">Organiza tus tareas en listas separadas</p>
+            </div>
+            <div>
+                <a href="{% url 'tasklist_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>
+                    Nueva Lista
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body py-3">
+                <form method="get" class="row g-3 align-items-center filter-form">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" name="search" class="form-control" placeholder="Buscar listas..." value="{{ current_search }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="order" class="form-select">
+                            <option value="name" {% if current_order == 'name' %}selected{% endif %}>Nombre (A-Z)</option>
+                            <option value="-name" {% if current_order == '-name' %}selected{% endif %}>Nombre (Z-A)</option>
+                            <option value="-created_at" {% if current_order == '-created_at' %}selected{% endif %}>Más recientes</option>
+                            <option value="created_at" {% if current_order == 'created_at' %}selected{% endif %}>Más antiguas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="filter" class="form-select">
+                            <option value="all" {% if current_filter == 'all' %}selected{% endif %}>Todas</option>
+                            <option value="own" {% if current_filter == 'own' %}selected{% endif %}>Solo mías</option>
+                            <option value="shared" {% if current_filter == 'shared' %}selected{% endif %}>Compartidas conmigo</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-filter me-2"></i>
+                            Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Listas -->
+<div class="row">
+    {% for tasklist in object_list %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 shadow-sm tasklist-card" data-color="{{ tasklist.color }}">
+            <div class="card-header border-0 d-flex justify-content-between align-items-center" style="background-color: {{ tasklist.color }}; color: white;">
+                <h5 class="card-title mb-0 text-truncate">
+                    <i class="fas fa-list me-2"></i>
+                    {{ tasklist.name }}
+                </h5>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="{% url 'tasklist_detail' tasklist.pk %}">
+                                <i class="fas fa-eye me-2"></i>Ver Lista
+                            </a>
+                        </li>
+                        {% if tasklist.owner == request.user %}
+                        <li>
+                            <a class="dropdown-item" href="{% url 'tasklist_edit' tasklist.pk %}">
+                                <i class="fas fa-edit me-2"></i>Editar
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{% url 'share_list' tasklist.pk %}">
+                                <i class="fas fa-share-alt me-2"></i>Compartir
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="{% url 'tasklist_delete' tasklist.pk %}">
+                                <i class="fas fa-trash me-2"></i>Eliminar
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if tasklist.description %}
+                <p class="card-text text-muted mb-3">{{ tasklist.description|truncatewords:15 }}</p>
+                {% endif %}
+                
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <div class="fw-bold text-primary">{{ tasklist.get_tasks_count }}</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <div class="fw-bold text-success">{{ tasklist.get_completed_tasks_count }}</div>
+                            <small class="text-muted">Completadas</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-2 bg-light rounded">
+                            <div class="fw-bold text-warning">{{ tasklist.get_pending_tasks_count }}</div>
+                            <small class="text-muted">Pendientes</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Barra de progreso -->
+                {% if tasklist.get_tasks_count > 0 %}
+                <div class="mb-3">
+                    {% with completion_percentage=tasklist.get_completed_tasks_count|floatformat:0 %}
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">Progreso</small>
+                        <small class="text-muted">
+                            {{ tasklist.get_completed_tasks_count }}/{{ tasklist.get_tasks_count }} 
+                            ({% widthratio tasklist.get_completed_tasks_count tasklist.get_tasks_count 100 %}%)
+                        </small>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {% widthratio tasklist.get_completed_tasks_count tasklist.get_tasks_count 100 %}%"></div>
+                    </div>
+                    {% endwith %}
+                </div>
+                {% endif %}
+                
+                <!-- Información del propietario -->
+                <div class="d-flex justify-content-between align-items-center text-muted">
+                    <small>
+                        {% if tasklist.owner == request.user %}
+                            <i class="fas fa-user me-1"></i>
+                            Tuya
+                        {% else %}
+                            <i class="fas fa-share-alt me-1"></i>
+                            {{ tasklist.owner.get_full_name|default:tasklist.owner.username }}
+                        {% endif %}
+                    </small>
+                    <small>
+                        <i class="fas fa-clock me-1"></i>
+                        {{ tasklist.updated_at|date:"d/m/Y" }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'tasklist_detail' tasklist.pk %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-eye me-2"></i>
+                    Ver Lista
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="text-center py-5">
+            <i class="fas fa-list-ul fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No tienes listas aún</h4>
+            <p class="text-muted">Crea tu primera lista para empezar a organizar tus tareas</p>
+            <a href="{% url 'tasklist_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Crear Primera Lista
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Paginación -->
+{% if is_paginated %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.order %}&order={{ request.GET.order }}{% endif %}{% if request.GET.filter %}&filter={{ request.GET.filter }}{% endif %}">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tasklist-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .tasklist-card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .progress {
+        height: 8px;
+        border-radius: 4px;
+    }
+    
+    .progress-bar {
+        border-radius: 4px;
+    }
+    
+    .card-header {
+        border-radius: 0.5rem 0.5rem 0 0 !important;
+    }
+    
+    .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .dropdown-menu {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-submit form on filter change
+    $('select[name="order"], select[name="filter"]').on('change', function() {
+        $(this).closest('form').submit();
+    });
+    
+    // Clear search
+    $('input[name="search"]').on('keyup', function(e) {
+        if (e.keyCode === 13) {
+            $(this).closest('form').submit();
+        }
+    });
+    
+    // Animación de carga
+    $('.tasklist-card').each(function(index) {
+        $(this).css('opacity', '0');
+        $(this).animate({
+            opacity: 1
+        }, 300 + (index * 100));
+    });
+});
+</script>
+{% endblock %} 

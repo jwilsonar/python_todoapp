@@ -1,0 +1,37 @@
+<!-- ============================================================================
+     KANBAN COLUMN COMPONENT
+     Columna reutilizable para el tablero Kanban
+     
+     Variables requeridas:
+     - column_id: ID único de la columna (ej: "pending-tasks")
+     - column_status: Estado de las tareas en esta columna (ej: "pending")
+     - column_title: Título de la columna (ej: "Pendientes")
+     - column_icon: Icono de la columna (ej: "fas fa-clock")
+     - column_header_class: Clase CSS del header (ej: "pending-header")
+     - tasks: Lista de tareas para filtrar
+     - task_count: Número de tareas en esta columna
+     - can_edit: Permiso de edición
+     ============================================================================ -->
+
+<div class="col-lg-4">
+    <div class="kanban-column-wrapper">
+        <!-- Header de la columna -->
+        <div class="kanban-column-header {{ column_header_class }}">
+            <h6 class="kanban-column-title">
+                <span>
+                    <i class="{{ column_icon }} me-2"></i>{{ column_title }}
+                </span>
+                <span class="kanban-count-badge">{{ task_count }}</span>
+            </h6>
+        </div>
+
+        <!-- Contenido de la columna -->
+        <div class="d-flex flex-column gap-3" id="{{ column_id }}" data-status="{{ column_status }}">
+            {% for task in tasks %}
+                {% if task.status == column_status %}
+                    {% include 'tasks/task_card.html' with task=task can_edit=can_edit %}
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,49 @@
+<!-- ============================================================================
+     TASK FILTER FORM COMPONENT
+     Formulario para filtrar tareas por diferentes criterios
+     ============================================================================ -->
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-3">
+        <form method="get" id="filter-form" class="row g-3 align-items-end">
+            <!-- Título -->
+            <div class="col-12">
+                <h5 class="mb-3">Filtros</h5>
+            </div>
+            
+            <!-- Campo de búsqueda -->
+            <div class="col-12 col-md-4">
+                {{ filter_form.search }}
+            </div>
+
+            <!-- Filtro por prioridad -->
+            <div class="col-6 col-md-2">
+                {{ filter_form.priority }}
+            </div>
+
+            <!-- Filtro por estado -->
+            <div class="col-6 col-md-2">
+                {{ filter_form.status }}
+            </div>
+
+            <!-- Filtro por fecha -->
+            <div class="col-6 col-md-2">
+                {{ filter_form.due_date_from }}
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="col-6 col-md-2">
+                <div class="d-flex gap-2 justify-content-end">
+                    <!-- Botón aplicar filtros -->
+                    <button type="submit" class="btn btn-primary btn-sm" title="Aplicar filtros">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <!-- Botón limpiar filtros -->
+                    <a href="?" class="btn btn-outline-secondary btn-sm" title="Limpiar filtros">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div> 

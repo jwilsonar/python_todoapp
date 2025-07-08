@@ -1,0 +1,50 @@
+<!-- ============================================================================
+     SHARED USERS COMPONENT
+     Sección que muestra los usuarios que tienen acceso a la lista
+     ============================================================================ -->
+
+{% if shared_users %}
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <!-- Header de la sección -->
+            <div class="card-header py-2" role="button">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Usuarios con Acceso ({{ shared_users|length }})
+                </h6>
+            </div>
+
+            <!-- Contenido de la sección -->
+            <div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {% for shared in shared_users %}
+                        <div class="col-md-4">
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <!-- Avatar del usuario -->
+                                <div class="avatar-sm me-2">
+                                    <div class="avatar-title bg-primary bg-opacity-25 text-primary rounded-circle">
+                                        {{ shared.shared_with.first_name|first|default:shared.shared_with.username|first }}
+                                    </div>
+                                </div>
+
+                                <!-- Información del usuario -->
+                                <div>
+                                    <h6 class="mb-0">
+                                        {{ shared.shared_with.get_full_name|default:shared.shared_with.username }}
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ shared.get_permission_display }}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %} 

@@ -1,0 +1,64 @@
+<!-- ============================================================================
+     PAGINATION COMPONENT
+     Componente de paginación reutilizable
+     
+     Variables requeridas:
+     - page_obj: Objeto de paginación de Django
+     ============================================================================ -->
+
+{% if page_obj.has_other_pages %}
+<div class="row mt-3">
+    <div class="col-12">
+        <nav aria-label="Navegación de páginas">
+            <ul class="pagination justify-content-center">
+                <!-- Enlace a página anterior -->
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Página anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Anterior</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Página anterior">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Anterior</span>
+                    </span>
+                </li>
+                {% endif %}
+                
+                <!-- Números de página -->
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active" aria-current="page">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Enlace a página siguiente -->
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Página siguiente">
+                        <span class="sr-only">Siguiente</span>
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link" aria-label="Página siguiente">
+                        <span class="sr-only">Siguiente</span>
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %} 

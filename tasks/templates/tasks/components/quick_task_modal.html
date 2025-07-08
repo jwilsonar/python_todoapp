@@ -1,0 +1,58 @@
+<!-- ============================================================================
+     QUICK TASK MODAL COMPONENT
+     Modal para crear tareas rápidamente sin formulario completo
+     ============================================================================ -->
+
+<div class="modal fade" id="quickTaskModal" tabindex="-1" aria-labelledby="quickTaskModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- Header del modal -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="quickTaskModalLabel">
+                    <i class="fas fa-bolt me-2"></i>
+                    Añadir Tarea Rápida
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+
+            <!-- Cuerpo del modal -->
+            <div class="modal-body">
+                <form id="quick-task-form" method="post" data-task-list-id="{{ task_list.pk }}">
+                    {% csrf_token %}
+                    
+                    <!-- Campo título de la tarea -->
+                    <div class="mb-3">
+                        <label for="quick-task-title" class="form-label">Título de la tarea</label>
+                        <input type="text" 
+                               id="quick-task-title"
+                               name="title" 
+                               class="form-control" 
+                               placeholder="Ej: Revisar el informe mensual..." 
+                               required
+                               autocomplete="off">
+                    </div>
+
+                    <!-- Campo prioridad -->
+                    <div class="mb-3">
+                        <label for="quick-task-priority" class="form-label">Prioridad</label>
+                        <select name="priority" id="quick-task-priority" class="form-select">
+                            <option value="low">Baja</option>
+                            <option value="medium" selected>Media</option>
+                            <option value="high">Alta</option>
+                        </select>
+                    </div>
+
+                    <!-- Botones del modal -->
+                    <div class="text-end">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Añadir Tarea
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div> 

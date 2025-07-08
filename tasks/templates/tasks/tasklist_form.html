@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+{% if object %}Editar Lista{% else %}Nueva Lista{% endif %} - To-Do App
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="h3 mb-0">
+                    {% if object %}
+                        <i class="fas fa-edit me-2 text-warning"></i>
+                        Editar Lista
+                    {% else %}
+                        <i class="fas fa-plus me-2 text-primary"></i>
+                        Nueva Lista
+                    {% endif %}
+                </h1>
+                <p class="text-muted mb-0">
+                    {% if object %}
+                        Modifica la configuración de tu lista
+                    {% else %}
+                        Crea una nueva lista para organizar tus tareas
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2 text-info"></i>
+                    Información de la Lista
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                                         {% if form.errors %}
+                     <div class="alert alert-danger" role="alert">
+                         <i class="fas fa-exclamation-triangle me-2"></i>
+                         <strong>Por favor, corrige los siguientes errores:</strong>
+                         <ul class="mb-0 mt-2">
+                             {% for field, errors in form.errors.items %}
+                                 {% for error in errors %}
+                                 <li>
+                                     {% if field != '__all__' %}
+                                         <strong>{{ field|title }}:</strong>
+                                     {% endif %}
+                                     {{ error }}
+                                 </li>
+                                 {% endfor %}
+                             {% endfor %}
+                         </ul>
+                     </div>
+                     {% endif %}
+                    
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if object %}Actualizar Lista{% else %}Crear Lista{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Información adicional para editar -->
+        {% if object %}
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Estadísticas de la Lista
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="p-3 bg-primary bg-opacity-10 rounded">
+                            <h4 class="text-primary mb-1">{{ object.get_tasks_count }}</h4>
+                            <small class="text-muted">Total de Tareas</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-success bg-opacity-10 rounded">
+                            <h4 class="text-success mb-1">{{ object.get_completed_tasks_count }}</h4>
+                            <small class="text-muted">Completadas</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-warning bg-opacity-10 rounded">
+                            <h4 class="text-warning mb-1">{{ object.get_pending_tasks_count }}</h4>
+                            <small class="text-muted">Pendientes</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="p-3 bg-info bg-opacity-10 rounded">
+                            <h4 class="text-info mb-1">{{ object.get_shared_with_users.count }}</h4>
+                            <small class="text-muted">Compartida con</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1">
+                                <strong>Creada:</strong> {{ object.created_at|date:"d/m/Y H:i" }}
+                            </p>
+                            <p class="mb-0">
+                                <strong>Última actualización:</strong> {{ object.updated_at|date:"d/m/Y H:i" }}
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <a href="{% url 'tasklist_detail' object.pk %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-2"></i>
+                                Ver Lista
+                            </a>
+                            <a href="{% url 'share_list' object.pk %}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-share-alt me-2"></i>
+                                Compartir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Usuarios con acceso -->
+                {% if object.get_shared_with_users.exists %}
+                <hr>
+                <div class="mt-3">
+                    <h6 class="mb-3">
+                        <i class="fas fa-users me-2"></i>
+                        Usuarios con Acceso
+                    </h6>
+                    <div class="row">
+                        {% for shared in object.shared_with.all %}
+                        <div class="col-md-6 mb-2">
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <div class="me-2">
+                                    <i class="fas fa-user-circle text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-bold">{{ shared.shared_with.get_full_name|default:shared.shared_with.username }}</div>
+                                    <small class="text-muted">
+                                        {{ shared.get_permission_display }} • {{ shared.shared_at|date:"d/m/Y" }}
+                                    </small>
+                                </div>
+                                <div>
+                                    <span class="badge bg-{{ shared.permission|yesno:'success,warning' }}">
+                                        {{ shared.get_permission_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+    
+    .btn {
+        border-radius: 0.375rem;
+    }
+    
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-resize textarea
+    $('textarea').each(function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+    
+    $('textarea').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+    });
+    
+    // Validación del formulario
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        
+        // Validar campos requeridos
+        $(this).find('[required]').each(function() {
+            if (!$(this).val().trim()) {
+                $(this).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            $('html, body').animate({
+                scrollTop: $('.is-invalid').first().offset().top - 100
+            }, 500);
+        }
+    });
+    
+    // Limpiar validación en tiempo real
+    $('.form-control, .form-select').on('input change', function() {
+        if ($(this).val().trim()) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Vista previa del color
+    $('input[name="color"]').on('change', function() {
+        const color = $(this).val();
+        $(this).css('border-color', color);
+    });
+});
+</script>
+{% endblock %} 

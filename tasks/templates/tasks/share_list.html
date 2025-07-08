@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Compartir Lista - To-Do App{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex align-items-center mb-4">
+            <a href="{% url 'tasklist_detail' task_list.pk %}" class="btn btn-outline-secondary me-3">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-share-alt me-2 text-primary"></i>
+                    Compartir Lista
+                </h1>
+                <p class="text-muted mb-0">
+                    Lista: <strong>{{ task_list.name }}</strong>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Formulario para compartir -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-user-plus me-2 text-success"></i>
+                    Compartir con Usuario
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    
+                                         {% if form.errors %}
+                     <div class="alert alert-danger" role="alert">
+                         <i class="fas fa-exclamation-triangle me-2"></i>
+                         <strong>Por favor, corrige los siguientes errores:</strong>
+                         <ul class="mb-0 mt-2">
+                             {% for field, errors in form.errors.items %}
+                                 {% for error in errors %}
+                                 <li>
+                                     {% if field != '__all__' %}
+                                         <strong>{{ field|title }}:</strong>
+                                     {% endif %}
+                                     {{ error }}
+                                 </li>
+                                 {% endfor %}
+                             {% endfor %}
+                         </ul>
+                     </div>
+                     {% endif %}
+                    
+                    {{ form|crispy }}
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{% url 'tasklist_detail' task_list.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-share-alt me-2"></i>
+                            Compartir Lista
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lista de usuarios actuales -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-users me-2 text-info"></i>
+                    Usuarios con Acceso
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if shared_users %}
+                <div class="row">
+                    {% for shared in shared_users %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card border">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ shared.shared_with.get_full_name|default:shared.shared_with.username }}</h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-at me-1"></i>
+                                                {{ shared.shared_with.email|default:shared.shared_with.username }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-{{ shared.permission|yesno:'success,warning' }} mb-2">
+                                            {{ shared.get_permission_display }}
+                                        </span>
+                                        <br>
+                                        <small class="text-muted">
+                                            {{ shared.shared_at|date:"d/m/Y" }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-user me-1"></i>
+                                        Compartido por: {{ shared.shared_by.get_full_name|default:shared.shared_by.username }}
+                                    </small>
+                                </div>
+                                <div class="mt-2">
+                                    <a href="{% url 'unshare_list' task_list.pk shared.pk %}" 
+                                       class="btn btn-sm btn-outline-danger" 
+                                       onclick="return confirm('¿Estás seguro de que quieres quitar el acceso a este usuario?')">
+                                        <i class="fas fa-user-minus me-1"></i>
+                                        Quitar Acceso
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No hay usuarios con acceso</h5>
+                    <p class="text-muted">Esta lista aún no ha sido compartida con nadie</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Información de la lista -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Información de la Lista
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="p-2 rounded me-3" style="background-color: {{ task_list.color }}; width: 40px; height: 40px;"></div>
+                    <div>
+                        <h6 class="mb-1">{{ task_list.name }}</h6>
+                        {% if task_list.description %}
+                        <small class="text-muted">{{ task_list.description|truncatewords:15 }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="p-2 bg-primary bg-opacity-10 rounded">
+                            <div class="fw-bold text-primary">{{ task_list.get_tasks_count }}</div>
+                            <small class="text-muted">Tareas</small>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 bg-success bg-opacity-10 rounded">
+                            <div class="fw-bold text-success">{{ task_list.get_completed_tasks_count }}</div>
+                            <small class="text-muted">Completadas</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>
+                        <strong>Creada:</strong> {{ task_list.created_at|date:"d/m/Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información sobre permisos -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Tipos de Permisos
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-warning me-2">Solo Lectura</span>
+                        <small class="text-muted">Ver tareas</small>
+                    </div>
+                    <ul class="list-unstyled mb-0 ms-3">
+                        <li><small class="text-muted">• Ver todas las tareas</small></li>
+                        <li><small class="text-muted">• Ver detalles de las tareas</small></li>
+                        <li><small class="text-muted">• Descargar archivos adjuntos</small></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <div class="d-flex align-items-center mb-2">
+                        <span class="badge bg-success me-2">Lectura y Escritura</span>
+                        <small class="text-muted">Editar tareas</small>
+                    </div>
+                    <ul class="list-unstyled mb-0 ms-3">
+                        <li><small class="text-muted">• Todos los permisos de lectura</small></li>
+                        <li><small class="text-muted">• Crear nuevas tareas</small></li>
+                        <li><small class="text-muted">• Editar tareas existentes</small></li>
+                        <li><small class="text-muted">• Marcar tareas como completadas</small></li>
+                        <li><small class="text-muted">• Añadir archivos adjuntos</small></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .card {
+        border-radius: 0.75rem;
+    }
+    
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .alert {
+        border-radius: 0.5rem;
+    }
+    
+    .btn {
+        border-radius: 0.375rem;
+    }
+    
+    .badge {
+        border-radius: 0.25rem;
+    }
+    
+    .bg-opacity-10 {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+    
+    .card-body .card {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .card-body .card:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Validación del formulario
+    $('form').on('submit', function(e) {
+        let isValid = true;
+        
+        // Validar campos requeridos
+        $(this).find('[required]').each(function() {
+            if (!$(this).val()) {
+                $(this).addClass('is-invalid');
+                isValid = false;
+            } else {
+                $(this).removeClass('is-invalid');
+            }
+        });
+        
+        if (!isValid) {
+            e.preventDefault();
+            $('html, body').animate({
+                scrollTop: $('.is-invalid').first().offset().top - 100
+            }, 500);
+        }
+    });
+    
+    // Limpiar validación en tiempo real
+    $('.form-control, .form-select').on('change', function() {
+        if ($(this).val()) {
+            $(this).removeClass('is-invalid');
+        }
+    });
+    
+    // Animación de entrada para las tarjetas de usuarios
+    $('.card-body .card').each(function(index) {
+        $(this).css('opacity', '0');
+        $(this).animate({
+            opacity: 1
+        }, 300 + (index * 100));
+    });
+});
+</script>
+{% endblock %} 
