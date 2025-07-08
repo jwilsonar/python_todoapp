@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField, DateTimeField
 from django.utils import timezone
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
@@ -106,6 +106,25 @@ class TaskListDetailView(LoginRequiredMixin, DetailView):
                 tasks = tasks.filter(due_date__gte=filter_form.cleaned_data['due_date_from'])
             if filter_form.cleaned_data['due_date_to']:
                 tasks = tasks.filter(due_date__lte=filter_form.cleaned_data['due_date_to'])
+        
+        # Ordenamiento personalizado por prioridad y fecha de vencimiento
+        tasks = tasks.annotate(
+            priority_order=Case(
+                When(priority='high', then=Value(1)),
+                When(priority='medium', then=Value(2)),
+                When(priority='low', then=Value(3)),
+                default=Value(4),
+                output_field=IntegerField(),
+            )
+        ).order_by(
+            'priority_order',  # Primero por prioridad (high -> medium -> low)
+            Case(  # Luego por fecha de vencimiento, pero las tareas sin fecha van al final
+                When(due_date__isnull=True, then=timezone.now() + timezone.timedelta(days=36500)),
+                default='due_date',
+                output_field=DateTimeField(),
+            ),
+            '-created_at'  # Finalmente por fecha de creación (más recientes primero)
+        )
         
         tasks = tasks.select_related('created_by').prefetch_related('attachments', 'assigned_users')
         
