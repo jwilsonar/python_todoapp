@@ -40,6 +40,10 @@ Una aplicación web moderna para la gestión de tareas desarrollada con Django, 
   - Pillow==11.3.0
   - sqlparse==0.5.3
   - tzdata==2025.2
+  - dj-database-url==3.0.1
+  - gunicorn==23.0.0
+  - whitenoise==6.9.0
+  - psycopg2-binary==2.9.10
 
 ## 🚀 Instalación y Configuración
 
@@ -56,11 +60,11 @@ git clone https://github.com/tu-usuario/todoapp.git
 cd todoapp
 ```
 
-2. **Crear entorno virtual**
+2. **Crear y activar el entorno virtual**
 ```bash
 # Windows
 python -m venv venv
-venv\Scripts\activate
+.\venv\Scripts\activate
 
 # Linux/Mac
 python -m venv venv
@@ -72,23 +76,34 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. **Configurar base de datos**
+4. **Configurar variables de entorno**
+Crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+```
+DJANGO_DEBUG=True
+DJANGO_SECRET_KEY=tu-clave-secreta-aqui
+```
+
+5. **Configurar base de datos SQLite**
 ```bash
-python manage.py makemigrations
 python manage.py migrate
 ```
 
-5. **Crear superusuario (opcional)**
+6. **Crear superusuario (opcional)**
 ```bash
 python manage.py createsuperuser
 ```
 
-6. **Ejecutar servidor de desarrollo**
+7. **Recolectar archivos estáticos**
+```bash
+python manage.py collectstatic --noinput
+```
+
+8. **Ejecutar servidor de desarrollo**
 ```bash
 python manage.py runserver
 ```
 
-7. **Acceder a la aplicación**
+9. **Acceder a la aplicación**
 - Aplicación: http://127.0.0.1:8000/
 - Admin: http://127.0.0.1:8000/admin/
 
