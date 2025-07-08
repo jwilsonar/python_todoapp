@@ -221,6 +221,12 @@ class TaskFilterForm(forms.Form):
         required=False,
         label='Estado'
     )
+    assigned_to = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        required=False,
+        empty_label="Todos los usuarios",
+        label='Responsable'
+    )
     due_date_from = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={'type': 'date'}),
@@ -232,8 +238,15 @@ class TaskFilterForm(forms.Form):
         label='Hasta'
     )
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, task_list=None, **kwargs):
         super().__init__(*args, **kwargs)
+        
+        # Configurar el queryset de usuarios asignables
+        if task_list:
+            shared_users = task_list.shared_with.values_list('shared_with', flat=True)
+            available_users = User.objects.filter(id__in=[task_list.owner.id, *shared_users])
+            self.fields['assigned_to'].queryset = available_users
+        
         # Aplicar clases CSS directamente a los widgets
         self.fields['search'].widget.attrs.update({
             'class': 'form-control form-control-sm',
@@ -243,6 +256,9 @@ class TaskFilterForm(forms.Form):
             'class': 'form-select form-select-sm'
         })
         self.fields['status'].widget.attrs.update({
+            'class': 'form-select form-select-sm'
+        })
+        self.fields['assigned_to'].widget.attrs.update({
             'class': 'form-select form-select-sm'
         })
         self.fields['due_date_from'].widget.attrs.update({

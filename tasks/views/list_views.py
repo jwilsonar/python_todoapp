@@ -79,7 +79,7 @@ class TaskListDetailView(LoginRequiredMixin, DetailView):
         task_list = self.get_object()
         
         # Filtros
-        filter_form = TaskFilterForm(self.request.GET)
+        filter_form = TaskFilterForm(self.request.GET, task_list=task_list)
         tasks = task_list.tasks.all()
         
         if filter_form.is_valid():
@@ -100,12 +100,14 @@ class TaskListDetailView(LoginRequiredMixin, DetailView):
                     tasks = tasks.filter(status='completed')
                 elif status == 'overdue':
                     tasks = tasks.filter(status__in=['pending', 'in_progress'], due_date__lt=timezone.now())
+            if filter_form.cleaned_data['assigned_to']:
+                tasks = tasks.filter(assigned_users=filter_form.cleaned_data['assigned_to'])
             if filter_form.cleaned_data['due_date_from']:
                 tasks = tasks.filter(due_date__gte=filter_form.cleaned_data['due_date_from'])
             if filter_form.cleaned_data['due_date_to']:
                 tasks = tasks.filter(due_date__lte=filter_form.cleaned_data['due_date_to'])
         
-        tasks = tasks.select_related('created_by').prefetch_related('attachments')
+        tasks = tasks.select_related('created_by').prefetch_related('attachments', 'assigned_users')
         
         # Paginación
         paginator = Paginator(tasks, 20)

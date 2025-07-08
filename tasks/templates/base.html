@@ -2,7 +2,7 @@
 <html lang="es" class="h-100">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <meta name="description" content="Aplicación de gestión de tareas - To-Do App">
     <title>{% block title %}To-Do App{% endblock %}</title>
     
@@ -19,36 +19,68 @@
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Alert Messages -->
+    {% if messages %}
+    <div class="alert-container mb-4 position-fixed top-0 start-50 translate-middle-x mt-3 z-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {% if message.tags == 'success' %}
+                <i class="fas fa-check-circle me-2"></i>
+            {% elif message.tags == 'error' %}
+                <i class="fas fa-exclamation-triangle me-2"></i>
+            {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-circle me-2"></i>
+            {% else %}
+                <i class="fas fa-info-circle me-2"></i>
+            {% endif %}
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {% if user.is_authenticated %}
     <!-- Layout for authenticated users -->
-    <div class="d-flex h-100">
-        <!-- Sidebar Toggle (Mobile) -->
-        <button class="btn sidebar-toggle position-fixed start-0 top-0 mt-2 ms-2 d-md-none" 
-                type="button" 
-                data-bs-toggle="offcanvas" 
-                data-bs-target="#sidebar" 
-                aria-controls="sidebar">
-            <i class="fas fa-bars"></i>
-        </button>
-        
+    <div class="d-flex h-100 position-relative">
+        <!-- Header for mobile -->
+        <header class="position-fixed top-0 start-0 w-100 bg-white border-bottom d-md-none z-2">
+            <div class="d-flex align-items-center p-3">
+                <button class="btn sidebar-toggle me-3 d-md-none" 
+                        type="button" 
+                        data-bs-toggle="offcanvas" 
+                        data-bs-target="#sidebar" 
+                        aria-controls="sidebar"
+                        style="width: 40px; height: 40px;">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="h6 mb-0">To-Do App</h1>
+            </div>
+        </header>
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar offcanvas-md offcanvas-start bg-white border-end" 
+        <aside class="sidebar offcanvas-md offcanvas-start bg-white border-end overflow-hidden" 
                id="sidebar" 
                tabindex="-1" 
-               aria-labelledby="sidebarLabel">
+               aria-labelledby="sidebarLabel"
+               style="width: 280px; max-width: 100vw;">
             <!-- Mobile Header -->
-            <div class="offcanvas-header d-md-none border-bottom bg-light">
-                <h5 class="offcanvas-title text-primary" id="sidebarLabel">
+            <div class="offcanvas-header d-md-none border-bottom bg-light py-3">
+                <h5 class="offcanvas-title text-primary mb-0" id="sidebarLabel">
                     <i class="fas fa-tasks me-2"></i>To-Do App
                 </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                <button type="button" 
+                        class="btn-close" 
+                        data-bs-dismiss="offcanvas" 
+                        data-bs-target="#sidebar" 
+                        aria-label="Close"></button>
             </div>
             
             <!-- Sidebar Content -->
-            <div class="offcanvas-body d-flex flex-column h-100 p-0">
+            <div class="offcanvas-body d-flex flex-column h-100 p-0 overflow-y-auto">
                 <!-- Brand Logo (Desktop) -->
                 <div class="p-3 d-none d-md-block border-bottom">
-                    <a class="navbar-brand text-decoration-none" href="{% url 'dashboard' %}">
+                    <a class="navbar-brand text-decoration-none d-flex align-items-center" href="{% url 'dashboard' %}">
                         <i class="fas fa-tasks me-2 text-primary"></i>
                         <span class="fw-bold text-dark">To-Do App</span>
                     </a>
@@ -56,35 +88,36 @@
                 
                 <!-- Main Navigation -->
                 <nav class="nav flex-column p-3">
-                    <a class="nav-link px-3 py-2 mb-1 {% if request.resolver_match.url_name == 'dashboard' %}active bg-primary text-white rounded-3{% else %}text-dark hover-primary{% endif %}" 
+                    <a class="nav-link px-3 py-2 mb-1 d-flex align-items-center {% if request.resolver_match.url_name == 'dashboard' %}active bg-primary text-white rounded-3{% else %}text-dark hover-primary{% endif %}" 
                        href="{% url 'dashboard' %}">
                         <i class="fas fa-tachometer-alt me-2"></i>
-                        Dashboard
+                        <span>Dashboard</span>
                     </a>
-                    <a class="nav-link px-3 py-2 mb-1 {% if request.resolver_match.url_name == 'tasklist_list' %}active bg-primary text-white rounded-3{% else %}text-dark hover-primary{% endif %}" 
+                    <a class="nav-link px-3 py-2 mb-1 d-flex align-items-center {% if request.resolver_match.url_name == 'tasklist_list' %}active bg-primary text-white rounded-3{% else %}text-dark hover-primary{% endif %}" 
                        href="{% url 'tasklist_list' %}">
                         <i class="fas fa-list me-2"></i>
-                        Listas de Tareas
+                        <span>Listas de Tareas</span>
                     </a>
-                    <a class="nav-link px-3 py-2 mb-1 text-dark hover-primary" href="{% url 'tasklist_create' %}">
+                    <a class="nav-link px-3 py-2 mb-1 d-flex align-items-center text-dark hover-primary" 
+                       href="{% url 'tasklist_create' %}">
                         <i class="fas fa-plus me-2 text-success"></i>
-                        Nueva Lista
+                        <span>Nueva Lista</span>
                     </a>
                 </nav>
                 
                 <!-- User Profile Section -->
                 <div class="mt-auto p-3 bg-light border-top">
                     <div class="d-flex align-items-center mb-3">
-                        <div class="flex-grow-1">
+                        <div class="flex-grow-1 overflow-hidden">
                             <small class="text-muted d-block mb-1">Usuario</small>
-                            <span class="fw-semibold text-dark">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="fw-semibold text-dark text-truncate">{{ user.get_full_name|default:user.username }}</span>
                         </div>
                     </div>
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center">
                             <i class="fas fa-sign-out-alt me-2"></i>
-                            Cerrar Sesión
+                            <span>Cerrar Sesión</span>
                         </button>
                     </form>
                 </div>
@@ -92,38 +125,15 @@
         </aside>
 
         <!-- Main Content Area -->
-        <main class="flex-grow-1 overflow-auto p-3">
-    {% else %}
-        <!-- Layout for non-authenticated users -->
-        <main class="container-fluid p-3">
-    {% endif %}
-            
-            <!-- Alert Messages -->
-            {% if messages %}
-            <div class="alert-container mb-4">
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {% if message.tags == 'success' %}
-                        <i class="fas fa-check-circle me-2"></i>
-                    {% elif message.tags == 'error' %}
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                    {% elif message.tags == 'warning' %}
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                    {% else %}
-                        <i class="fas fa-info-circle me-2"></i>
-                    {% endif %}
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-                {% endfor %}
+        <main class="flex-grow-1 overflow-auto w-100 contenido">
+            <div class="p-3">
+                {% block content %}{% endblock %}
             </div>
-            {% endif %}
-            
-            <!-- Page Content -->
-            {% block content %}{% endblock %}
         </main>
-    {% if user.is_authenticated %}
     </div>
+    {% else %}
+    <!-- Layout for non-authenticated users -->
+    {% block main_content %}{% endblock %}
     {% endif %}
     
     <!-- JavaScript Dependencies -->

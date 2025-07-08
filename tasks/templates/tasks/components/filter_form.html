@@ -12,7 +12,7 @@
             </div>
             
             <!-- Campo de búsqueda -->
-            <div class="col-12 col-md-4">
+            <div class="col-12 col-md-3">
                 {{ filter_form.search }}
             </div>
 
@@ -26,13 +26,18 @@
                 {{ filter_form.status }}
             </div>
 
+            <!-- Filtro por responsable -->
+            <div class="col-6 col-md-2">
+                {{ filter_form.assigned_to }}
+            </div>
+
             <!-- Filtro por fecha -->
             <div class="col-6 col-md-2">
                 {{ filter_form.due_date_from }}
             </div>
 
             <!-- Botones de acción -->
-            <div class="col-6 col-md-2">
+            <div class="col-12 col-md-1">
                 <div class="d-flex gap-2 justify-content-end">
                     <!-- Botón aplicar filtros -->
                     <button type="submit" class="btn btn-primary btn-sm" title="Aplicar filtros">

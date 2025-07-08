@@ -127,3 +127,9 @@ a:hover {
 .nav-link.active{
     color: var(--primary-dark);
 }
+
+@media (max-width: 768px) {
+    .contenido {
+        margin-top: 65px;
+    }
+}
